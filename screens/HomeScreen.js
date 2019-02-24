@@ -19,10 +19,6 @@ import {
 import { Button } from 'react-native-elements'
 
 export default class HomeScreen extends React.Component {
-  static navigationOptions = {
-    header: null,
-  };
-
   render() {
     return (
       <View style={styles.container}>
@@ -49,7 +45,7 @@ export default class HomeScreen extends React.Component {
 
   _handleLogin = async () => {
     let redirectUrl = AuthSession.getRedirectUrl()
-    let accessToken = await AuthSession.startAsync({
+    let { params: { access_token } } = await AuthSession.startAsync({
       authUrl:
         `https://accounts.spotify.com/authorize?` +
         `&client_id=${SPOTIFY_APP_ID}` +
@@ -57,17 +53,21 @@ export default class HomeScreen extends React.Component {
         `&scope=user-read-email&response_type=token`
     })
 
-    Async.setItem("accessToken", accessToken)
+    AsyncStorage.setItem("accessToken", access_token)
     
-    const req = await fetch(`https://api.spotify.com/v1/me`, {
+    let me_req = await fetch(`https://api.spotify.com/v1/me`, {
       headers: {
-        "Authorization": `Bearer ${result.params.access_token}`
+        "Authorization": `Bearer ${access_token}`
       }
     })
 
-    const { id } = await req.json()
+    const { id } = await me_req.json()
 
     AsyncStorage.setItem("userID", id)
+
+    const { navigate } = this.props.navigation
+
+    navigate("RoomCreation", { userID: id })
   }
 }
 

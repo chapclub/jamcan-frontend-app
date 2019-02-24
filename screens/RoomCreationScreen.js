@@ -8,29 +8,36 @@ const { width, height } = Dimensions.get('window')
 class RoomCreationScreen extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {room: "", userID: ""}
+    this.state = { room: "" }
   }
 
-  async componentDidMount() {
-    let userID = await AsyncStorage.getItem('userID')
-    this.setState((prevState) => ({
-      ...prevState,
-      userID
-    }))
-  }
+  _handleCreateRoom = async () => {
+    const userID = this.props.navigation.getParam("userID")
+    const title = this.state.room
 
-  _handleCreateRoom = () => {
-    fetch(`http://localhost:8000/api/parties`, {
+    let req = await fetch('http://localhost:4000/api/parties', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        title: this.state.room,
-        owner_id: this.state.userID
-      }),
+        party: {
+          title, 
+          owner_id: userID
+        }
+      })
     })
+
+    let { data: { join_code } } = await req.json()
+    
+    let _res = await AsyncStorage.multiSet([
+      ["joinCode", join_code], 
+      ["roomTitle", title]
+    ])
+
+    const { navigate } = this.props.navigation
+    navigate("RoomCode", { roomID: join_code })
   }
 
   render() {
@@ -44,6 +51,7 @@ class RoomCreationScreen extends React.Component {
         </View>
         <Button 
           title="Create Room"
+          onPress={this._handleCreateRoom}
           style={{ borderRadius: 40, width: width/2}} />
       </View>
     )
