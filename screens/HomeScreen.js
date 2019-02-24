@@ -1,5 +1,4 @@
 import React from 'react';
-import { AuthSession, LinearGradient } from 'expo';
 
 const SPOTIFY_APP_ID = "5b65b983663c4e3bab1b85c4cb9bd5f7"
 const SCOPES = 'user-read-private user-read-email'
@@ -17,17 +16,13 @@ import {
 } from 'react-native';
 
 import { Button } from 'react-native-elements'
+import Spotify from 'rn-spotify-sdk';
 
 export default class HomeScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
         <View style={styles.banner}>
-          <LinearGradient
-            colors={['#0cebeb', '#29ffc6']}
-            style={styles.gradientBackground}>
-            <Text style={styles.title}>JamStack</Text>
-          </LinearGradient>
         </View>
         <View style={styles.content}>
           <Text style={styles.subTitle}>Quick, pass the aux!</Text>
@@ -44,30 +39,15 @@ export default class HomeScreen extends React.Component {
   }
 
   _handleLogin = async () => {
-    let redirectUrl = AuthSession.getRedirectUrl()
-    let { params: { access_token } } = await AuthSession.startAsync({
-      authUrl:
-        `https://accounts.spotify.com/authorize?` +
-        `&client_id=${SPOTIFY_APP_ID}` +
-        `&redirect_uri=${encodeURIComponent(redirectUrl)}` +
-        `&scope=user-read-email&response_type=token`
-    })
+    const redirectUrl = AuthSession.getRedirectUrl()
+    const spotifyOptions = {
+      "clientID": SPOTIFY_APP_ID,
+      "sessionUserDefaultsKey": "SpotifySession",
+      "redirectURL": redirectUrl,
+      "scopes": ["user-read-private", "playlist-read", "playlist-read-private", "streaming"],
+    }
 
-    AsyncStorage.setItem("accessToken", access_token)
-    
-    let me_req = await fetch(`https://api.spotify.com/v1/me`, {
-      headers: {
-        "Authorization": `Bearer ${access_token}`
-      }
-    })
-
-    const { id } = await me_req.json()
-
-    AsyncStorage.setItem("userID", id)
-
-    const { navigate } = this.props.navigation
-
-    navigate("RoomCreation", { userID: id })
+    const loggedIn = await Spotify.initialize(spotifyOptions)
   }
 }
 

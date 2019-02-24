@@ -1,60 +1,31 @@
 import React from 'react';
 import { Platform } from 'react-native';
-import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
+import { createStackNavigator, createSwitchNavigator } from 'react-navigation';
 
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import RoomCreationScreen from '../screens/RoomCreationScreen'
+import RoomCodeScreen from '../screens/RoomCodeScreen'
+import RoomScreen from '../screens/RoomScreen'
+import CheckAuthScreen from '../screens/CheckAuthScreen'
 
-const HomeStack = createStackNavigator({
+const NoRoomStack = createSwitchNavigator({
   Home: HomeScreen,
+  RoomCreation: RoomCreationScreen,
+  RoomCode: RoomCodeScreen
 });
 
-HomeStack.navigationOptions = {
-  tabBarLabel: 'Home',
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={
-        Platform.OS === 'ios'
-          ? `ios-information-circle${focused ? '' : '-outline'}`
-          : 'md-information-circle'
-      }
-    />
-  ),
-};
+const RoomStack = createStackNavigator({
+  Room: RoomScreen
+})
 
-const LinksStack = createStackNavigator({
-  Links: LinksScreen,
-});
-
-LinksStack.navigationOptions = {
-  tabBarLabel: 'Links',
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={Platform.OS === 'ios' ? 'ios-link' : 'md-link'}
-    />
-  ),
-};
-
-const SettingsStack = createStackNavigator({
-  Settings: SettingsScreen,
-});
-
-SettingsStack.navigationOptions = {
-  tabBarLabel: 'Settings',
-  tabBarIcon: ({ focused }) => (
-    <TabBarIcon
-      focused={focused}
-      name={Platform.OS === 'ios' ? 'ios-options' : 'md-options'}
-    />
-  ),
-};
-
-export default createBottomTabNavigator({
-  HomeStack,
-  LinksStack,
-  SettingsStack,
-});
+export default createSwitchNavigator({
+    CheckAuth: CheckAuthScreen,
+    NoRoom: NoRoomStack,
+    Room: RoomStack
+  }, {
+    initialRouteName: "CheckAuth"
+  }
+)
