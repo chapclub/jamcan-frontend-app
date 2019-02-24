@@ -5,6 +5,7 @@ const SPOTIFY_APP_ID = "5b65b983663c4e3bab1b85c4cb9bd5f7"
 const SCOPES = 'user-read-private user-read-email'
 
 import {
+  AsyncStorage,
   Image,
   Platform,
   ScrollView,
@@ -46,17 +47,27 @@ export default class HomeScreen extends React.Component {
     );
   }
 
-  _handleLogin = () => {
+  _handleLogin = async () => {
     let redirectUrl = AuthSession.getRedirectUrl()
-    console.log(redirectUrl)
-    let result = AuthSession.startAsync({
+    let accessToken = await AuthSession.startAsync({
       authUrl:
-        `https://accounts.spotify.com/authorize?response_type=code` +
+        `https://accounts.spotify.com/authorize?` +
         `&client_id=${SPOTIFY_APP_ID}` +
-        `&scope=${encodeURIComponent(SCOPES)}` +
-        `&redirect_uri=${encodeURIComponent(redirectUrl)}`
+        `&redirect_uri=${encodeURIComponent(redirectUrl)}` +
+        `&scope=user-read-email&response_type=token`
     })
-    this.setState({ result })
+
+    Async.setItem("accessToken", accessToken)
+    
+    const req = await fetch(`https://api.spotify.com/v1/me`, {
+      headers: {
+        "Authorization": `Bearer ${result.params.access_token}`
+      }
+    })
+
+    const { id } = await req.json()
+
+    AsyncStorage.setItem("userID", id)
   }
 }
 
